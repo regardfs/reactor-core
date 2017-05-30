@@ -112,63 +112,61 @@ public final class UnicastProcessor<T>
 	}
 
 	/**
-	 * Create a unicast {@link FluxProcessor} that will buffer on a given queue in an
+	 * Create a new {@link UnicastProcessor} that will buffer on an internal queue in an
 	 * unbounded fashion.
 	 *
-	 * @param <T> the relayed type
+	 * @param <E> the relayed type
 	 * @return a unicast {@link FluxProcessor}
 	 */
-	public static <T> UnicastProcessor<T> create() {
-		return Builder.<T>create().build();
+	public static <E> UnicastProcessor<E> create() {
+		return new UnicastProcessor<E>(QueueSupplier.<E>unbounded().get(), Builder.NOOP_DISPOSABLE);
 	}
 
 	/**
-	 * Create a unicast {@link FluxProcessor} that will buffer on a given queue in an
+	 * Create a new {@link UnicastProcessor} that will buffer on a provided queue in an
 	 * unbounded fashion.
 	 *
 	 * @param queue the buffering queue
-	 * @param <T> the relayed type
+	 * @param <E> the relayed type
 	 * @return a unicast {@link FluxProcessor}
 	 * @deprecated use {@link Builder#build()}
 	 */
 	@Deprecated
-	public static <T> UnicastProcessor<T> create(Queue<T> queue) {
-		return Builder.<T>create().queue(queue).build();
+	public static <E> UnicastProcessor<E> create(Queue<E> queue) {
+		return Builder.<E>create().queue(queue).build();
 	}
 
 	/**
-	 * Create a unicast {@link FluxProcessor} that will buffer on a given queue in an
+	 * Create a new {@link UnicastProcessor} that will buffer on a provided queue in an
 	 * unbounded fashion.
 	 *
 	 * @param queue the buffering queue
 	 * @param endcallback called on any terminal signal
-	 * @param <T> the relayed type
+	 * @param <E> the relayed type
 	 * @return a unicast {@link FluxProcessor}
-	 * @deprecated use {@link Builder#build()}
 	 */
-	@Deprecated
-	public static <T> UnicastProcessor<T> create(Queue<T> queue, Disposable endcallback) {
-		return Builder.<T>create().queue(queue).onTerminate(endcallback).build();
+	public static <E> UnicastProcessor<E> create(Queue<E> queue, Disposable endcallback) {
+		return new UnicastProcessor(queue, endcallback);
 	}
 
 	/**
-	 * Create a unicast {@link FluxProcessor} that will buffer on a given queue in an
+	 * Create a new {@link UnicastProcessor} that will buffer on a provided queue in an
 	 * unbounded fashion.
 	 *
 	 * @param queue the buffering queue
 	 * @param endcallback called on any terminal signal
 	 * @param onOverflow called when queue.offer return false and unicastProcessor is
 	 * about to emit onError.
-	 * @param <T> the relayed type
+	 * @param <E> the relayed type
 	 *
 	 * @return a unicast {@link FluxProcessor}
 	 * @deprecated use {@link Builder#build()}
 	 */
 	@Deprecated
-	public static <T> UnicastProcessor<T> create(Queue<T> queue,
-			Consumer<? super T> onOverflow,
+	public static <E> UnicastProcessor<E> create(Queue<E> queue,
+			Consumer<? super E> onOverflow,
 			Disposable endcallback) {
-		return Builder.<T>create().queue(queue).onOverflow(onOverflow).onTerminate(endcallback).build();
+		return Builder.<E>create().queue(queue).onOverflow(onOverflow).onTerminate(endcallback).build();
 	}
 
 	final Queue<T>            queue;
