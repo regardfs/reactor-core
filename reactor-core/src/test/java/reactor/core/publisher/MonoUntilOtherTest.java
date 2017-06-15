@@ -122,7 +122,7 @@ public class MonoUntilOtherTest {
 		StepVerifier.create(new MonoUntilOther<>(true,
 				Mono.<String>error(boom1),
 				Mono.<Integer>error(boom2)))
-		            .verifyErrorMatches(e -> e.getMessage().equals("Multiple errors") &&
+		            .verifyErrorMatches(e -> e.getMessage().equals("Multiple exceptions") &&
 				            e.getSuppressed()[0] == boom1 &&
 				            e.getSuppressed()[1] == boom2);
 	}
