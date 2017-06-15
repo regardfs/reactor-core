@@ -31,9 +31,9 @@ import javax.annotation.Nullable;
 
 /**
  * Waits for a Mono source to terminate or produce a value, in which case the value is
- * mapped to a Publisher used as a delay: its first production or termination will trigger
- * the actual emission of the value downstream. If the Mono source didn't produce a value,
- * terminate with the same signal (empty completion or error).
+ * mapped to a Publisher used as a delay: its termination will trigger the actual emission
+ * of the value downstream. If the Mono source didn't produce a value, terminate with the
+ * same signal (empty completion or error).
  *
  * @param <T> the value type
  *

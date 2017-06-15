@@ -3176,6 +3176,59 @@ public abstract class Flux<T> implements Publisher<T> {
 	}
 
 	/**
+	 * Subscribe to this {@link Flux} and generate a {@link Publisher} from each of this
+	 * Flux elements, each acting as a trigger for relaying said element.
+	 * <p>
+	 * That is to say, the resulting {@link Flux} delays each of its emission until the
+	 * associated trigger Publisher terminates.
+	 * <p>
+	 * In case of an error either in the source or in a trigger, that error is propagated
+	 * immediately downstream.
+	 * Note that unlike with the {@link Mono#delayUntil(Function) Mono variant} there is
+	 * no fusion of subsequent calls.
+	 * <p>
+	 * <img class="marble" src="https://raw.githubusercontent.com/reactor/reactor-core/master/src/docs/marble/delayUntil.png" alt="">
+	 *
+	 * @param triggerProvider a {@link Function} that maps each element into a
+	 * {@link Publisher} whose termination will trigger relaying the value.
+	 *
+	 * @return this Flux, but with elements delayed until their derived publisher terminates.
+	 */
+	//TODO update the marble URL to a tag pre-release
+	public final Flux<T> delayUntil(Function<? super T, ? extends Publisher<?>> triggerProvider) {
+		return concatMap(v -> Mono.just(v)
+		                          .delayUntil(triggerProvider));
+	}
+
+	/**
+	 * Subscribe to this {@link Flux} and generate a {@link Publisher} from each of this
+	 * Flux elements, each acting as a trigger for relaying said element.
+	 * <p>
+	 * That is to say, the resulting {@link Flux} delays each of its emission until the
+	 * associated trigger Publisher terminates.
+	 * <p>
+	 * In case of an error either in a trigger, the element associated with the failed
+	 * trigger is dropped but subsequent elements are still propagated and delayed. Any
+	 * error in the source is propagated immediately downstream.
+	 * Note that unlike with the {@link Mono#delayUntil(Function) Mono variant} there is
+	 * no fusion of subsequent calls.
+	 * <p>
+	 * <img class="marble" src="https://raw.githubusercontent.com/reactor/reactor-core/master/src/docs/marble/delayUntil.png" alt="">
+	 *
+	 * @param triggerProvider a {@link Function} that maps each element into a
+	 * {@link Publisher} whose termination will trigger relaying the value.
+	 *
+	 * @return this Flux, but with elements delayed until their derived publisher terminates.
+	 */
+	//TODO update the marble URL to a tag pre-release
+	public final Flux<T> delayUntilDelayError(Function<? super T, ? extends Publisher<?>> triggerProvider) {
+		return concatMapDelayError(v -> Mono.just(v)
+		                                    //no need for delayError variant since no macro fusion of triggers
+		                                    .delayUntil(triggerProvider),
+				true, QueueSupplier.XS_BUFFER_SIZE);
+	}
+
+	/**
 	 * Delay the {@link Flux#subscribe(Subscriber) subscription} to this {@link Flux} source until the given
 	 * period elapses. The delay is introduced through the {@link Schedulers#parallel() parallel} default Scheduler.
 	 *
