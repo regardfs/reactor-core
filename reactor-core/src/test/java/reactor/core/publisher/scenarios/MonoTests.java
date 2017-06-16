@@ -29,7 +29,7 @@ import reactor.core.publisher.Signal;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.subscriber.AssertSubscriber;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -154,15 +154,15 @@ public class MonoTests {
 
 	@Test
 	public void promiseDelays() throws Exception {
-		Tuple2<Long, String> h = Mono.delay(Duration.ofMillis(3000))
-		                             .log("time1")
-		                             .map(d -> "Spring wins")
-		                             .or(Mono.delay(Duration.ofMillis(2000)).log("time2").map(d -> "Spring Reactive"))
-		                             .flatMap(t -> Mono.just(t+ " world"))
-		                             .elapsed()
-		                             .block();
-		assertThat("Alternate mono not seen", h.getT2(), is("Spring Reactive world"));
-		System.out.println(h.getT1());
+		TimedValue<String> h = Mono.delay(Duration.ofMillis(3000))
+		                           .log("time1")
+		                           .map(d -> "Spring wins")
+		                           .or(Mono.delay(Duration.ofMillis(2000)).log("time2").map(d -> "Spring Reactive"))
+		                           .flatMap(t -> Mono.just(t+ " world"))
+		                           .elapsed()
+		                           .block();
+		assertThat("Alternate mono not seen", h.getValue(), is("Spring Reactive world"));
+		System.out.println(h.getTiming());
 	}
 
 	@Test

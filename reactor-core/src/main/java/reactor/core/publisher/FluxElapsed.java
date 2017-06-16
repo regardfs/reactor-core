@@ -17,19 +17,19 @@
 package reactor.core.publisher;
 
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nullable;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
 import reactor.core.Fuseable;
 import reactor.core.scheduler.Scheduler;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
-import javax.annotation.Nullable;
+import reactor.util.function.TimedValue;
 
 /**
  * @author Stephane Maldini
  */
-final class FluxElapsed<T> extends FluxSource<T, Tuple2<Long, T>> implements Fuseable {
+final class FluxElapsed<T> extends FluxSource<T, TimedValue<T>> implements Fuseable {
 
 	final Scheduler scheduler;
 
@@ -39,15 +39,15 @@ final class FluxElapsed<T> extends FluxSource<T, Tuple2<Long, T>> implements Fus
 	}
 
 	@Override
-	public void subscribe(Subscriber<? super Tuple2<Long, T>> s) {
+	public void subscribe(Subscriber<? super TimedValue<T>> s) {
 		source.subscribe(new ElapsedSubscriber<T>(s, scheduler));
 	}
 
 	static final class ElapsedSubscriber<T>
-			implements InnerOperator<T, Tuple2<Long, T>>,
-			           QueueSubscription<Tuple2<Long, T>> {
+			implements InnerOperator<T, TimedValue<T>>,
+			           QueueSubscription<TimedValue<T>> {
 
-		final Subscriber<? super Tuple2<Long, T>> actual;
+		final Subscriber<? super TimedValue<T>> actual;
 		final Scheduler                           scheduler;
 
 		Subscription      s;
@@ -55,7 +55,7 @@ final class FluxElapsed<T> extends FluxSource<T, Tuple2<Long, T>> implements Fus
 
 		long lastTime;
 
-		ElapsedSubscriber(Subscriber<? super Tuple2<Long, T>> actual, Scheduler scheduler) {
+		ElapsedSubscriber(Subscriber<? super TimedValue<T>> actual, Scheduler scheduler) {
 			this.actual = actual;
 			this.scheduler = scheduler;
 		}
@@ -78,7 +78,7 @@ final class FluxElapsed<T> extends FluxSource<T, Tuple2<Long, T>> implements Fus
 		}
 
 		@Override
-		public Subscriber<? super Tuple2<Long, T>> actual() {
+		public Subscriber<? super TimedValue<T>> actual() {
 			return actual;
 		}
 
@@ -121,17 +121,17 @@ final class FluxElapsed<T> extends FluxSource<T, Tuple2<Long, T>> implements Fus
 			return Fuseable.NONE;
 		}
 
-		Tuple2<Long, T> snapshot(T data){
+		TimedValue<T> snapshot(T data){
 			long now = scheduler.now(TimeUnit.MILLISECONDS);
 			long last = lastTime;
 			lastTime = now;
 			long delta = now - last;
-			return Tuples.of(delta, data);
+			return new TimedValue<>(delta, data);
 		}
 
 		@Override
 		@Nullable
-		public Tuple2<Long, T> poll() {
+		public TimedValue<T> poll() {
 			T data = qs.poll();
 			if(data != null){
 				return snapshot(data);

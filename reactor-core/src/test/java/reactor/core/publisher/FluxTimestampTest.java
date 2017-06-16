@@ -19,11 +19,11 @@ import java.time.Duration;
 
 import org.junit.Test;
 import reactor.test.StepVerifier;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 public class FluxTimestampTest {
 
-	Flux<Tuple2<Long, String>> scenario_aFluxCanBeTimestamped(){
+	Flux<TimedValue<String>> scenario_aFluxCanBeTimestamped(){
 		return Flux.just("test")
 		           .timestamp();
 	}
@@ -33,7 +33,7 @@ public class FluxTimestampTest {
 		StepVerifier.withVirtualTime(this::scenario_aFluxCanBeTimestamped, 0)
 		            .thenAwait(Duration.ofSeconds(2))
 		            .thenRequest(1)
-		            .expectNextMatches(t -> t.getT1() == 2000 && t.getT2().equals("test"))
+		            .expectNextMatches(t -> t.getTiming() == 2000 && t.getValue().equals("test"))
 		            .verifyComplete();
 	}
 }

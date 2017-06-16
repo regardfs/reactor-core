@@ -19,10 +19,7 @@ package reactor.guide;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -35,7 +32,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -44,6 +40,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.reactivestreams.Subscription;
+
 import reactor.core.Disposable;
 import reactor.core.Exceptions;
 import reactor.core.publisher.BaseSubscriber;
@@ -56,7 +53,7 @@ import reactor.core.publisher.UnicastProcessor;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 import reactor.util.lang.NonNullApi;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -562,7 +559,7 @@ public class GuideTests {
 		VirtualTimeScheduler virtualTimeScheduler = VirtualTimeScheduler.create();
 		VirtualTimeScheduler.set(virtualTimeScheduler);
 
-		Flux<Tuple2<Long,String>> flux =
+		Flux<TimedValue<String>> flux =
 		Flux.interval(Duration.ofMillis(250))
 		    .map(input -> {
 			    if (input < 3) return "tick " + input;
@@ -580,12 +577,12 @@ public class GuideTests {
 
 		StepVerifier.withVirtualTime(() -> flux, () -> virtualTimeScheduler, Long.MAX_VALUE)
 		            .thenAwait(Duration.ofSeconds(3))
-		            .expectNextMatches(t -> t.getT2().equals("tick 0"))
-		            .expectNextMatches(t -> t.getT2().equals("tick 1"))
-		            .expectNextMatches(t -> t.getT2().equals("tick 2"))
-		            .expectNextMatches(t -> t.getT2().equals("tick 0"))
-		            .expectNextMatches(t -> t.getT2().equals("tick 1"))
-		            .expectNextMatches(t -> t.getT2().equals("tick 2"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 0"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 1"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 2"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 0"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 1"))
+		            .expectNextMatches(t -> t.getValue().equals("tick 2"))
 		            .verifyErrorMessage("boom");
 	}
 

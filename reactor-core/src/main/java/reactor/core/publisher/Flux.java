@@ -50,6 +50,7 @@ import javax.annotation.Nullable;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
 import reactor.core.Disposable;
 import reactor.core.Exceptions;
 import reactor.core.Fuseable;
@@ -59,6 +60,7 @@ import reactor.core.scheduler.Scheduler.Worker;
 import reactor.core.scheduler.Schedulers;
 import reactor.util.Logger;
 import reactor.util.concurrent.QueueSupplier;
+import reactor.util.function.TimedValue;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuple4;
@@ -3574,8 +3576,8 @@ public abstract class Flux<T> implements Publisher<T> {
 	}
 
 	/**
-	 * Map this {@link Flux} into {@link reactor.util.function.Tuple2 Tuple2&lt;Long, T&gt;}
-	 * of timemillis and source data. The timemillis corresponds to the elapsed time
+	 * Map this {@link Flux} into {@link TimedValue} of timemillis and source data.
+	 * The timemillis ({@link TimedValue#getTiming()}) corresponds to the elapsed time
 	 * between each signal as measured by the {@link Schedulers#parallel() parallel} scheduler.
 	 * First duration is measured between the subscription and the first element.
 	 *
@@ -3584,13 +3586,13 @@ public abstract class Flux<T> implements Publisher<T> {
 	 *
 	 * @return a new {@link Flux} that emits a tuple of time elapsed in milliseconds and matching data
 	 */
-	public final Flux<Tuple2<Long, T>> elapsed() {
+	public final Flux<TimedValue<T>> elapsed() {
 		return elapsed(Schedulers.parallel());
 	}
 
 	/**
-	 * Map this {@link Flux} into {@link reactor.util.function.Tuple2 Tuple2&lt;Long, T&gt;}
-	 * of timemillis and source data. The timemillis corresponds to the elapsed time
+	 * Map this {@link Flux} into {@link TimedValue} of timemillis and source data.
+	 * The timemillis ({@link TimedValue#getTiming()}) corresponds to the elapsed time
 	 * between each signal as measured by the provided {@link Scheduler}.
 	 * First duration is measured between the subscription and the first element.
 	 * <p>
@@ -3601,7 +3603,7 @@ public abstract class Flux<T> implements Publisher<T> {
 	 *
 	 * @return a new {@link Flux} that emits tuples of time elapsed in milliseconds and matching data
 	 */
-	public final Flux<Tuple2<Long, T>> elapsed(Scheduler scheduler) {
+	public final Flux<TimedValue<T>> elapsed(Scheduler scheduler) {
 		Objects.requireNonNull(scheduler, "scheduler");
 		return onAssembly(new FluxElapsed<>(this, scheduler));
 	}
@@ -6633,23 +6635,23 @@ public abstract class Flux<T> implements Publisher<T> {
 	}
 
 	/**
-	 * Emit a {@link reactor.util.function.Tuple2} pair of T1 the current clock time in
-	 * millis (as a {@link Long} measured by the {@link Schedulers#parallel() parallel}
-	 * Scheduler) and T2 the emitted data (as a {@code T}), for each item from this {@link Flux}.
+	 * Emit a {@link TimedValue} pair the current clock time in millis (as measured by the
+	 * {@link Schedulers#parallel() parallel} Scheduler) and the emitted data (as a {@code T}),
+	 * for each item from this {@link Flux}.
 	 *
 	 * <p>
 	 * <img class="marble" src="https://raw.githubusercontent.com/reactor/reactor-core/v3.1.0.M2/src/docs/marble/timestamp.png" alt="">
 	 *
 	 * @return a timestamped {@link Flux}
 	 */
-	public final Flux<Tuple2<Long, T>> timestamp() {
+	public final Flux<TimedValue<T>> timestamp() {
 		return timestamp(Schedulers.parallel());
 	}
 
 	/**
-	 * Emit a {@link reactor.util.function.Tuple2} pair of T1 the current clock time in
-	 * millis (as a {@link Long} measured by the provided {@link Scheduler}) and T2
-	 * the emitted data (as a {@code T}), for each item from this {@link Flux}.
+	 * Emit a {@link TimedValue} pair of the current clock time in millis (as measured by
+	 * the provided {@link Scheduler}) and the emitted data (as a {@code T}), for each item
+	 * from this {@link Flux}.
 	 *
 	 * <p>
 	 * <img class="marble" src="https://raw.githubusercontent.com/reactor/reactor-core/v3.1.0.M2/src/docs/marble/timestamp.png" alt="">
@@ -6657,9 +6659,9 @@ public abstract class Flux<T> implements Publisher<T> {
 	 * @param scheduler the {@link Scheduler} to read time from
 	 * @return a timestamped {@link Flux}
 	 */
-	public final Flux<Tuple2<Long, T>> timestamp(Scheduler scheduler) {
+	public final Flux<TimedValue<T>> timestamp(Scheduler scheduler) {
 		Objects.requireNonNull(scheduler, "scheduler");
-		return map(d -> Tuples.of(scheduler.now(TimeUnit.MILLISECONDS), d));
+		return map(d -> new TimedValue<>(scheduler.now(TimeUnit.MILLISECONDS), d));
 	}
 
 	/**

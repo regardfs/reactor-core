@@ -195,7 +195,7 @@ I want to deal with: <<which.create>>, <<which.values>>, <<which.peeking>>,
 
 [[which.time]]
 == Time
-* I want to associate emissions with a timing (`Tuple2<Long, T>`) measured...
+* I want to associate emissions with a timing (`TimedValue<T>`) measured...
 ** since subscription: `elapsed`
 ** since the dawn of time (well, computer time): `timestamp`
 

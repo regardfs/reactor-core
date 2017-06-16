@@ -21,7 +21,7 @@ import java.time.Duration;
 import org.junit.Test;
 import reactor.test.StepVerifier;
 import reactor.test.scheduler.VirtualTimeScheduler;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 public class FluxCacheTest {
 
@@ -31,23 +31,23 @@ public class FluxCacheTest {
 			//delayElements now uses parallel() so VTS must be enabled everywhere
 			VirtualTimeScheduler vts = VirtualTimeScheduler.getOrSet();
 
-			Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-			                                         .delayElements(Duration.ofMillis(1000))
-			                                         .cache()
-			                                         .elapsed();
+			Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+			                                       .delayElements(Duration.ofMillis(1000))
+			                                       .cache()
+			                                       .elapsed();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 			            .verifyComplete();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 1)
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 1)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 			            .verifyComplete();
 		}
 		finally {
@@ -61,22 +61,22 @@ public class FluxCacheTest {
 			//delayElements now uses parallel() so VTS must be enabled everywhere
 			VirtualTimeScheduler vts = VirtualTimeScheduler.getOrSet();
 
-			Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-			                                         .delayElements(Duration.ofMillis(1000))
-			                                         .cache(Duration.ofMillis(2000))
-			                                         .elapsed();
+			Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+			                                       .delayElements(Duration.ofMillis(1000))
+			                                       .cache(Duration.ofMillis(2000))
+			                                       .elapsed();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 			            .verifyComplete();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 			            .verifyComplete();
 		}
 		finally {
@@ -90,22 +90,22 @@ public class FluxCacheTest {
 			//delayElements now uses parallel() so VTS must be enabled everywhere
 			VirtualTimeScheduler vts = VirtualTimeScheduler.getOrSet();
 
-			Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-			                                         .delayElements(Duration.ofMillis(1000))
-			                                         .cache(2, Duration.ofMillis(2000))
-			                                         .elapsed();
+			Flux<TimedValue<Integer>>source = Flux.just(1, 2, 3)
+			                                      .delayElements(Duration.ofMillis(1000))
+			                                      .cache(2, Duration.ofMillis(2000))
+			                                      .elapsed();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 			            .verifyComplete();
 
 			StepVerifier.create(source)
 			            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-			            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+			            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 			            .verifyComplete();
 		}
 		finally {

@@ -25,11 +25,12 @@ import org.reactivestreams.Subscription;
 import reactor.core.Scannable;
 import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
+import reactor.util.function.TimedValue;
 import reactor.util.function.Tuple2;
 
 public class FluxElapsedTest {
 
-	Flux<Tuple2<Long, String>> scenario_aFluxCanBeBenchmarked(){
+	Flux<TimedValue<String>> scenario_aFluxCanBeBenchmarked(){
 		return Flux.just("test")
 		           .elapsed();
 	}
@@ -39,7 +40,7 @@ public class FluxElapsedTest {
 		StepVerifier.withVirtualTime(this::scenario_aFluxCanBeBenchmarked,0)
 		            .thenAwait(Duration.ofSeconds(2))
 		            .thenRequest(1)
-		            .expectNextMatches(t -> t.getT1() == 2000 && t.getT2().equals("test"))
+		            .expectNextMatches(t -> t.getTiming() == 2000 && t.getValue().equals("test"))
 		            .verifyComplete();
 	}
 

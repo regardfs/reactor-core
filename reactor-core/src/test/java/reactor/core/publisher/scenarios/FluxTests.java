@@ -54,6 +54,7 @@ import org.reactivestreams.Processor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+
 import reactor.core.Disposable;
 import reactor.core.Exceptions;
 import reactor.core.publisher.EmitterProcessor;
@@ -70,13 +71,13 @@ import reactor.test.StepVerifier;
 import reactor.test.subscriber.AssertSubscriber;
 import reactor.util.Logger;
 import reactor.util.Loggers;
+import reactor.util.function.TimedValue;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.number.OrderingComparison.lessThan;
 import static org.junit.Assert.*;
 
@@ -426,7 +427,7 @@ public class FluxTests extends AbstractReactorTest {
 
 		                          .elapsed()
 		                          .skip(1)
-		                          .groupBy(w -> w.getT1())
+		                          .groupBy(TimedValue::getTiming)
 								  .flatMap(w -> w.count().map(c -> Tuples.of(w.key(), c)))
 		                          .log("elapsed")
 		                          .collectSortedList(Comparator.comparing(Tuple2::getT1))

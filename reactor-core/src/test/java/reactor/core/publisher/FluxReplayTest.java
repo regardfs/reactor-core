@@ -34,7 +34,7 @@ import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.FluxOperatorTest;
 import reactor.test.scheduler.VirtualTimeScheduler;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -93,24 +93,24 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFlux() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay()
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay()
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -118,26 +118,26 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxFused() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay()
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay()
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -145,23 +145,23 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxTTL() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay(Duration.ofMillis(2000))
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay(Duration.ofMillis(2000))
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -169,25 +169,25 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxTTLFused() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay(Duration.ofMillis(2000))
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay(Duration.ofMillis(2000))
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -195,23 +195,23 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxTTLMillis() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay(Duration.ofMillis(2000), vts)
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay(Duration.ofMillis(2000), vts)
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -219,23 +219,23 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxHistoryTTL() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay(2, Duration.ofMillis(2000))
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay(2, Duration.ofMillis(2000))
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 
 	}
@@ -243,25 +243,25 @@ public class FluxReplayTest extends FluxOperatorTest<String, String> {
 	@Test
 	public void cacheFluxHistoryTTLFused() {
 
-		Flux<Tuple2<Long, Integer>> source = Flux.just(1, 2, 3)
-		                                         .delayElements(Duration.ofMillis(1000))
-		                                         .replay(2, Duration.ofMillis(2000))
-		                                         .autoConnect()
-		                                         .elapsed();
+		Flux<TimedValue<Integer>> source = Flux.just(1, 2, 3)
+		                                       .delayElements(Duration.ofMillis(1000))
+		                                       .replay(2, Duration.ofMillis(2000))
+		                                       .autoConnect()
+		                                       .elapsed();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 1)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 1000 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 1)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 1000 && t.getValue() == 3)
 		            .verifyComplete();
 
 		StepVerifier.create(source)
 		            .expectFusion(Fuseable.ANY)
 		            .then(() -> vts.advanceTimeBy(Duration.ofSeconds(3)))
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 2)
-		            .expectNextMatches(t -> t.getT1() == 0 && t.getT2() == 3)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 2)
+		            .expectNextMatches(t -> t.getTiming() == 0 && t.getValue() == 3)
 		            .verifyComplete();
 	}
 

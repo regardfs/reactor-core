@@ -19,14 +19,14 @@ package reactor.guide;
 import java.util.function.Function;
 
 import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 /**
  * @author Simon Baslé
  */
 public class FakeUtils2 {
 
-	public static final Function<? super Flux<String>, Flux<Tuple2<Long, String>>> enrichUser =
+	public static final Function<? super Flux<String>, Flux<TimedValue<String>>> enrichUser =
 			f -> f.elapsed();
 
 }

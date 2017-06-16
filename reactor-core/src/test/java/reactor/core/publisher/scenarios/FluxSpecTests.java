@@ -1057,8 +1057,8 @@ public class FluxSpecTests {
 		           .elapsed()
 		           .take(10)
 		           .reduce(0L,
-				           (acc, next) -> acc > 0l ? ((next.getT1() + acc) / 2) :
-						           next.getT1());
+				           (acc, next) -> acc > 0l ? ((next.getTiming() + acc) / 2) :
+						           next.getTiming());
 
 	}
 
@@ -1076,8 +1076,8 @@ public class FluxSpecTests {
 		           .elapsed()
 		           .take(10)
 		           .reduce(0L,
-				           (acc, next) -> acc > 0l ? ((next.getT1() + acc) / 2) :
-						           next.getT1());
+				           (acc, next) -> acc > 0l ? ((next.getTiming() + acc) / 2) :
+						           next.getTiming());
 
 	}
 

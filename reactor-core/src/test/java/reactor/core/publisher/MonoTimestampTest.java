@@ -19,11 +19,11 @@ import java.time.Duration;
 
 import org.junit.Test;
 import reactor.test.StepVerifier;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 public class MonoTimestampTest {
 
-	Mono<Tuple2<Long, String>> scenario_aMonoCanBeTimestamped(){
+	Mono<TimedValue<String>> scenario_aMonoCanBeTimestamped(){
 		return Mono.just("test")
 		           .timestamp();
 	}
@@ -33,7 +33,7 @@ public class MonoTimestampTest {
 		StepVerifier.withVirtualTime(this::scenario_aMonoCanBeTimestamped, 0)
 		            .thenAwait(Duration.ofSeconds(2))
 		            .thenRequest(1)
-		            .expectNextMatches(t -> t.getT1() == 2000 && t.getT2().equals("test"))
+		            .expectNextMatches(t -> t.getTiming() == 2000 && t.getValue().equals("test"))
 		            .verifyComplete();
 	}
 }

@@ -19,12 +19,12 @@ import java.time.Duration;
 
 import org.junit.Test;
 import reactor.test.StepVerifier;
-import reactor.util.function.Tuple2;
+import reactor.util.function.TimedValue;
 
 public class MonoElapsedTest {
 
 
-	Mono<Tuple2<Long, String>> scenario_aFluxCanBeBenchmarked(){
+	Mono<TimedValue<String>> scenario_aFluxCanBeBenchmarked(){
 		return Mono.just("test")
 		           .elapsed();
 	}
@@ -34,7 +34,7 @@ public class MonoElapsedTest {
 		StepVerifier.withVirtualTime(this::scenario_aFluxCanBeBenchmarked,0)
 		            .thenAwait(Duration.ofSeconds(2))
 		            .thenRequest(1)
-		            .expectNextMatches(t -> t.getT1() == 2000 && t.getT2().equals("test"))
+		            .expectNextMatches(t -> t.getTiming() == 2000 && t.getValue().equals("test"))
 		            .verifyComplete();
 	}
 }
