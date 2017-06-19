@@ -3172,7 +3172,7 @@ public abstract class Flux<T> implements Publisher<T> {
 	 * @return a delayed {@link Flux}
 	 */
 	public final Flux<T> delayElements(Duration delay, Scheduler timer) {
-		return concatMap(t ->  Mono.delay(delay, timer).map(i -> t));
+		return delayUntil(t ->  Mono.delay(delay, timer));
 	}
 
 	/**
